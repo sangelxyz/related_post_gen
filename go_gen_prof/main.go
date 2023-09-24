@@ -59,7 +59,7 @@ func main() {
 		}
 	}
 
-	for x := 0; x < 1000; x++ {
+	for x := 0; x < 500; x++ {
 
 		allRelatedPosts := make([]RelatedPosts, 0, len(posts))
 		taggedPostCount := make([]int, len(posts))
