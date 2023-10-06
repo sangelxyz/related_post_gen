@@ -111,14 +111,8 @@ let start2 = Instant::now();
                         count,
                     }),
             );
-            
-            let mut related = Vec::with_capacity(top.len());
-            for it in top {
-                related.push(posts[it.post as usize].clone());
-            }
-            //
             //let related = top.map(|it| &posts[it.post as usize]).collect();
-            //let related: Vec<&Post> = top.map(|it| &posts[it.post as usize]).collect();
+            let related: Vec<&Post> = top.map(|it| &posts[it.post as usize]).collect();
             RelatedPosts {
                 _id: &post._id,
                 tags: &post.tags,
