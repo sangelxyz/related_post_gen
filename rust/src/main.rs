@@ -86,6 +86,7 @@ fn main() {
         }
     }
 
+let start2 = Instant::now();
     let related_posts: Vec<RelatedPosts<'_>> = posts
         .iter()
         .enumerate()
@@ -93,13 +94,10 @@ fn main() {
             // faster than allocating outside the loop
             let mut tagged_post_count = vec![0u16; posts.len()];
 
-            for tag in post.tags.iter() {
-                if let Some(tag_posts) = post_tags_map.get::<str>(tag.as_ref()) {
-                    for other_post_idx in tag_posts.iter() {
-                        tagged_post_count[*other_post_idx as usize] += 1;
-                    }
-                }
-            }
+            post.tags
+                .iter()
+                .flat_map(|tag| post_tags_map.get::<str>(tag.as_ref()).into_iter().flatten())
+                .for_each(|&other_post_idx| tagged_post_count[other_post_idx as usize] += 1);
 
             tagged_post_count[post_idx] = 0; // don't recommend the same post
 
@@ -113,8 +111,14 @@ fn main() {
                         count,
                     }),
             );
-            let related = top.map(|it| &posts[it.post as usize]).collect();
-
+            
+            let mut related = Vec::with_capacity(top.len());
+            for it in top {
+                related.push(posts[it.post as usize].clone());
+            }
+            //
+            //let related = top.map(|it| &posts[it.post as usize]).collect();
+            //let related: Vec<&Post> = top.map(|it| &posts[it.post as usize]).collect();
             RelatedPosts {
                 _id: &post._id,
                 tags: &post.tags,
@@ -122,6 +126,7 @@ fn main() {
             }
         })
         .collect();
+let end2 = Instant::now();
 
     let end = Instant::now();
 
@@ -130,8 +135,9 @@ fn main() {
     let json_str = serde_json::to_string(&related_posts).unwrap();
 
     print!(
-        "Processing time (w/o IO): {:?}\n",
-        end.duration_since(start)
+        "Processing time (w/o IO): {:?} {:?}\n",
+        end.duration_since(start),
+        end2.duration_since(start2),
     );
 
     std::fs::write("../related_posts_rust.json", json_str).unwrap();
